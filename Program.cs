@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using System.Globalization;
 
 namespace UkoaConverter
 {
@@ -42,6 +43,9 @@ namespace UkoaConverter
                     string line;
                     using (var writer = File.CreateText(options.Output))
                     {
+                        NumberFormatInfo nfi = new NumberFormatInfo();
+                        nfi.NumberDecimalSeparator = ".";
+                        nfi.NumberDecimalDigits = 6;
                         while ((line = reader.ReadLine()?.Trim()) != null)
                         {
                             //RAE52-01               0645929.40S 655311.90E
@@ -55,7 +59,7 @@ namespace UkoaConverter
                             var eastWest = LatLonString2DD(parts[2]);
 
                             //east-west: 655311.90E
-                            writer.WriteLine($"{profileNumber}{options.Separator}{shotNumber}{options.Separator}{northSouth:00.000000}{options.Separator}{eastWest:00.000000}");
+                            writer.WriteLine($"{profileNumber}{options.Separator}{shotNumber}{options.Separator}{northSouth.ToString("N", nfi)}{options.Separator}{eastWest.ToString("N", nfi)}");
                         }
                     }
                 }
