@@ -28,20 +28,18 @@ namespace UkoaConverter
                 .WithNotParsed<Options>((errs) => HandleParseError(errs));
         }
 
-        private static void RunOptionsAndReturnExitCode(Options options)
+        private static void ProcessSingleFile(string input, string output, string separator)
         {
-            options.Output = Path.Combine(Path.GetDirectoryName(options.Input), new FileInfo(options.Input).Name + ".csv");
+            Console.WriteLine($"Input: {input}");
+            Console.WriteLine($"Separator: {separator}");
+            Console.WriteLine($"Output: {output}");
 
-            Console.WriteLine($"Input: {options.Input}");
-            Console.WriteLine($"Separator: {options.Separator}");
-            Console.WriteLine($"Output: {options.Output}");
-
-            using (var fileStream = new FileStream(options.Input, FileMode.Open))
+            using (var fileStream = new FileStream(input, FileMode.Open))
             {
                 using (var reader = new StreamReader(fileStream))
                 {
                     string line;
-                    using (var writer = File.CreateText(options.Output))
+                    using (var writer = File.CreateText(output))
                     {
                         NumberFormatInfo nfi = new NumberFormatInfo();
                         nfi.NumberDecimalSeparator = ".";
@@ -59,11 +57,37 @@ namespace UkoaConverter
                             var eastWest = LatLonString2DD(parts[2]);
 
                             //east-west: 655311.90E
-                            writer.WriteLine($"{profileNumber}{options.Separator}{shotNumber}{options.Separator}{northSouth.ToString("N", nfi)}{options.Separator}{eastWest.ToString("N", nfi)}");
+                            writer.WriteLine($"{profileNumber}{separator}{shotNumber}{separator}{northSouth.ToString("N", nfi)}{separator}{eastWest.ToString("N", nfi)}");
                         }
                     }
                 }
             }
+        }
+
+        private static void RunOptionsAndReturnExitCode(Options options)
+        {
+            // check if input is directory or file
+            if (Directory.Exists(options.Input))
+            {
+                // get all .uko files and process them iteratively
+                foreach (var ukoFile in Directory.EnumerateFiles(options.Input, "*.uko"))
+                {
+                    ProcessSingleFile(ukoFile, GetOutputPath(ukoFile), options.Separator);
+                }
+            }
+            else if (File.Exists(options.Input))
+            {
+                ProcessSingleFile(options.Input, GetOutputPath(options.Input), options.Separator);
+            }
+            else
+            {
+                Console.WriteLine($"Input folder or file ({options.Input}) does not exist.");
+            }
+        }
+
+        private static string GetOutputPath(string inputPath)
+        {
+            return Path.Combine(Path.GetDirectoryName(inputPath), Path.GetFileNameWithoutExtension(inputPath) + ".csv");
         }
 
         private static void HandleParseError(IEnumerable<CommandLine.Error> errors)
