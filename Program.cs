@@ -47,14 +47,11 @@ namespace UkoaConverter
                         while ((line = reader.ReadLine()?.Trim()) != null)
                         {
                             //RAE52-01               0645929.40S 655311.90E
-                            var parts = line.Split(" ").Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
-
-                            //RAE52-01,0645929.40S,655311.90E
-
-                            var profileNumber = parts[0];
-                            var shotNumber = parts[1].Substring(0, parts[1].Length - 10);
-                            var northSouth = LatLonString2DD(parts[1].Substring(parts[1].Length - 10));
-                            var eastWest = LatLonString2DD(parts[2]);
+                            var profileAndShot = line.Substring(0, line.Length - 21).Split(" ").Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+                            var profileNumber = profileAndShot[0];
+                            var shotNumber = profileAndShot[1];
+                            var northSouth = LatLonString2DD(line.Substring(line.Length - 21, 10));
+                            var eastWest = LatLonString2DD(line.Substring(line.Length-11));
 
                             //east-west: 655311.90E
                             writer.WriteLine($"{profileNumber}{separator}{shotNumber}{separator}{northSouth.ToString("N", nfi)}{separator}{eastWest.ToString("N", nfi)}");
