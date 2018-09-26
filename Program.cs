@@ -109,7 +109,7 @@ namespace UkoaConverter
 
         private static double DMS2DD(int degrees, int minutes, double seconds, char direction)
         {
-            var dd = degrees + minutes / 60 + seconds / 3600;
+            var dd = degrees + minutes / 60.0 + seconds / 3600.0;
             return (direction == 'S' || direction == 'W') ? -1 * dd : dd;
         }
     }
